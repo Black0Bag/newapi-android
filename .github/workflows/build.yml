@@ -1,0 +1,85 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ========== 1. 编译 New API ARM64 二进制 ==========
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.1'
+          cache-dependency-path: |
+            newapi-src/go.sum
+            newapi-src/relaykit/go.sum
+
+      - name: Build New API ARM64 binary
+        working-directory: newapi-src
+        run: |
+          # 前端剥离：放置占位 index.html（源码零改动）
+          mkdir -p web/dist
+          cat > web/dist/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head><meta charset="utf-8"><title>New API (Headless)</title></head>
+          <body><h3>New API backend running in headless mode.</h3></body>
+          </html>
+          EOF
+          # 静态编译 arm64
+          export CGO_ENABLED=0 GOOS=linux GOARCH=arm64
+          go build -trimpath -ldflags '-s -w' -o libnewapi.so .
+
+      # ========== 2. 放置二进制到 jniLibs ==========
+      - name: Place binary into jniLibs
+        run: |
+          mkdir -p android/app/src/main/jniLibs/arm64-v8a
+          cp newapi-src/libnewapi.so android/app/src/main/jniLibs/arm64-v8a/libnewapi.so
+          ls -la android/app/src/main/jniLibs/arm64-v8a/
+
+      # ========== 3. 构建 APK ==========
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build debug APK
+        working-directory: android
+        run: gradle assembleDebug --no-daemon
+
+      # ========== 4. 发布到 Release ==========
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: newapi-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.3.0-m0
+          name: v0.3.0-m0 (M0 最小验证)
+          body: |
+            ## M0 最小技术验证 APK
+            - 极简 UI：启动/停止后端 + 状态显示
+            - 内嵌 New API ARM64 二进制（libnewapi.so）
+            - 端口：13000
+            - 默认账号：root / 123456（首次启动自动创建）
+          files: |
+            android/app/build/outputs/apk/debug/*.apk
+          generate_release_notes: false
