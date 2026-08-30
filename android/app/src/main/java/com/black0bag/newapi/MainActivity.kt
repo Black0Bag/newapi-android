@@ -11,8 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * MainActivity
@@ -119,7 +121,7 @@ class MainActivity : ComponentActivity() {
                                 statusText = if (BackendProcessManager.isRunning) "停止失败" else "已停止"
                             } else {
                                 statusText = "正在启动..."
-                                val result = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                                val result = withContext(Dispatchers.IO) {
                                     BackendProcessManager.start(this@MainActivity)
                                 }
                                 statusText = if (result.isSuccess) {
@@ -155,7 +157,7 @@ class MainActivity : ComponentActivity() {
                         val url = "http://127.0.0.1:${BackendProcessManager.port()}/api/status"
                         lifecycleScope.launch {
                             statusText = "测试中..."
-                            val result = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                            val result = withContext(Dispatchers.IO) {
                                 try {
                                     val conn = (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply {
                                         requestMethod = "GET"
