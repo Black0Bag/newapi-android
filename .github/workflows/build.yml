@@ -23,6 +23,13 @@ jobs:
             newapi-src/go.sum
             newapi-src/relaykit/go.sum
 
+      - name: Extract New API source
+        run: |
+          # 从 tar.gz 解压源码
+          mkdir -p newapi-src
+          tar xzf newapi-src.tar.gz -C newapi-src
+          ls newapi-src | head -10
+
       - name: Build New API ARM64 binary
         working-directory: newapi-src
         run: |
