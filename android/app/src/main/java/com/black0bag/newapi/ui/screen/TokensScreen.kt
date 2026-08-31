@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.black0bag.newapi.data.ApiClient
 import com.black0bag.newapi.data.model.ApiResponse
+import com.black0bag.newapi.data.model.BooleanData
 import com.black0bag.newapi.data.model.EmptyData
 import com.black0bag.newapi.data.model.PageData
 import com.black0bag.newapi.data.model.Token
@@ -73,11 +74,11 @@ fun TokensScreen() {
         scope.launch {
             val r = withContext(Dispatchers.IO) {
                 runCatching {
-                    val resp: ApiResponse<Token> = ApiClient.putWithQuery(
+                    val resp: ApiResponse<BooleanData> = ApiClient.putWithQuery(
                         path = "/api/token/",
                         query = "status_only=true",
                         body = mapOf("id" to t.id, "status" to newStatus),
-                        serializer = Token.serializer(),
+                        serializer = BooleanData.serializer(),
                     )
                     if (!resp.success) error("切换失败: ${resp.message}")
                 }
