@@ -5,10 +5,13 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +40,8 @@ class MainActivity : ComponentActivity() {
         var isRunning by remember { mutableStateOf(BackendProcessManager.isRunning) }
         var statusText by remember { mutableStateOf("就绪") }
         var isBusy by remember { mutableStateOf(false) }
+        var showLog by remember { mutableStateOf(false) }
+        var logText by remember { mutableStateOf("") }
 
         // 定期刷新运行状态
         LaunchedEffect(Unit) {
@@ -127,7 +132,10 @@ class MainActivity : ComponentActivity() {
                                 statusText = if (result.isSuccess) {
                                     "启动成功 (port ${result.getOrNull()})"
                                 } else {
-                                    "启动失败: ${result.exceptionOrNull()?.message}"
+                                    val err = result.exceptionOrNull()?.message ?: "未知错误"
+                                    // 截断显示前 500 字符，完整内容放日志弹窗
+                                    logText = err
+                                    if (err.length > 500) err.take(500) + "\n... (点「查看日志」看完整)" else err
                                 }
                             }
                             isRunning = BackendProcessManager.isRunning
@@ -177,6 +185,42 @@ class MainActivity : ComponentActivity() {
                     enabled = isRunning
                 ) {
                     Text("健康检查 /api/status")
+                }
+
+                // 查看日志按钮（诊断用）
+                TextButton(
+                    onClick = {
+                        lifecycleScope.launch {
+                            logText = withContext(Dispatchers.IO) {
+                                BackendProcessManager.tailLog(this@MainActivity, 40)
+                            }
+                            showLog = true
+                        }
+                    }
+                ) {
+                    Text("查看日志")
+                }
+
+                // 日志对话框
+                if (showLog) {
+                    AlertDialog(
+                        onDismissRequest = { showLog = false },
+                        title = { Text("后端日志 (server.log)") },
+                        text = {
+                            val scroll = rememberScrollState()
+                            Text(
+                                text = logText,
+                                modifier = Modifier
+                                    .heightIn(max = 400.dp)
+                                    .verticalScroll(scroll),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showLog = false }) { Text("关闭") }
+                        }
+                    )
                 }
             }
         }
