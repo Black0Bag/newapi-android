@@ -18,6 +18,7 @@ import com.black0bag.newapi.data.ApiClient
 import com.black0bag.newapi.data.SettingsStore
 import com.black0bag.newapi.ui.ConfirmDialog
 import com.black0bag.newapi.util.CopyUtils
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -74,7 +75,7 @@ fun SettingsScreen() {
     fun importNow() {
         val raw = importText.trim()
         if (raw.isEmpty()) {
-            snackbar.showSnackbar("请先填入 JSON 内容")
+            scope.launch { snackbar.showSnackbar("请先填入 JSON 内容") }
             return
         }
         scope.launch {
