@@ -64,6 +64,26 @@ object ApiClient {
     suspend fun <T> delete(path: String, serializer: KSerializer<T>): ApiResponse<T> =
         request("DELETE", path, null, serializer)
 
+    /** GET 请求（返回原始字符串 body，用于 data 是裸字符串的接口） */
+    suspend fun getRaw(path: String): String {
+        val url = baseUrl() + path
+        val builder = Request.Builder()
+            .url(url)
+            .method("GET", null)
+
+        if (pat.isNotBlank()) {
+            builder.header("Authorization", "Bearer $pat")
+        }
+
+        client.newCall(builder.build()).execute().use { resp ->
+            val bodyStr = resp.body?.string() ?: ""
+            if (!resp.isSuccessful) {
+                throw ApiException("HTTP ${resp.code}: $bodyStr", resp.code)
+            }
+            return bodyStr
+        }
+    }
+
     /** 通用请求（需在协程/IO 线程调用） */
     private suspend fun <T> request(
         method: String,
