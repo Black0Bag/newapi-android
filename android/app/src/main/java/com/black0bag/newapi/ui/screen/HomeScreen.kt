@@ -118,11 +118,6 @@ fun HomeScreen(
                         modifier = Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Key,
-                            contentDescription = null,
-                        )
-                        Spacer(Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text("登录 / 账号", style = MaterialTheme.typography.titleMedium)
                             Text(
