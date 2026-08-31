@@ -163,13 +163,31 @@ object ApiClient {
         }
     }
 
-    /** 用 org.json 序列化请求体（最稳，无泛型坑） */
+    /** 用 org.json 序列化请求体（递归处理 Map/List，避免嵌套对象被转成字符串） */
     private fun buildBody(body: Map<String, Any?>?): okhttp3.RequestBody? {
         if (body == null) return null
         val obj = JSONObject()
         body.forEach { (k, v) ->
-            obj.put(k, v)
+            obj.put(k, toJsonValue(v))
         }
         return obj.toString().toRequestBody("application/json".toMediaType())
+    }
+
+    /** 递归转换：Map → JSONObject，List → JSONArray，其余原样（修复嵌套 channel 被序列化成字符串的 bug） */
+    private fun toJsonValue(v: Any?): Any {
+        return when (v) {
+            null -> JSONObject.NULL
+            is Map<*, *> -> {
+                val o = JSONObject()
+                v.forEach { (k, value) -> o.put(k.toString(), toJsonValue(value)) }
+                o
+            }
+            is List<*> -> {
+                val arr = org.json.JSONArray()
+                v.forEach { arr.put(toJsonValue(it)) }
+                arr
+            }
+            else -> v
+        }
     }
 }
