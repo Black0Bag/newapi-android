@@ -99,6 +99,9 @@ fun LoginScreen(
                 scope.launch {
                     val result = withContext(Dispatchers.IO) {
                         runCatching {
+                            // 0. 登录前确保后端已初始化（新版 New API 不自动建 root）
+                            com.black0bag.newapi.data.ApiClient.ensureInitialized()
+
                             // 1. 登录拿 access_token（POST JSON: {username, password}）
                             val loginBody = mapOf(
                                 "username" to username,
@@ -107,13 +110,21 @@ fun LoginScreen(
                             val loginResp: ApiResponse<LoginResponse> = ApiClient.post(
                                 "/api/user/login", loginBody, LoginResponse.serializer()
                             )
+                            // 关键：检查第一步是否真的成功，否则暴露真错误（不再被第二步 401 掩盖）
+                            if (!loginResp.success) {
+                                throw IllegalStateException(
+                                    loginResp.message.ifBlank { "用户名或密码错误" }
+                                )
+                            }
                             val token = loginResp.data?.accessToken ?: ""
+                            if (token.isBlank()) {
+                                throw IllegalStateException("登录成功但未返回 access_token")
+                            }
                             // 2. 用 access_token 换 PAT（永久令牌）
-                            // GenerateAccessToken 返回 {"success":true,"data":"sk-xxx"}，需提取 data 字段
+                            // GenerateAccessToken 返回 {"success":true,"data":"xxx"}，提取 data 字段
                             ApiClient.pat = token
                             val rawResp = ApiClient.getRaw("/api/user/token")
                             ApiClient.pat = ""
-                            // 从 JSON 响应中提取 data 字段（裸字符串 key）
                             val pat = org.json.JSONObject(rawResp).optString("data", "")
                             pat
                         }
@@ -144,7 +155,7 @@ fun LoginScreen(
 
         // 提示
         Text(
-            text = "首次使用默认账号 root / 123456",
+            text = "默认管理员：root / root123456\n（启动后端时已自动初始化）",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
