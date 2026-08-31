@@ -84,6 +84,52 @@ object ApiClient {
         }
     }
 
+    /** POST 请求（返回原始字符串 body，用于响应结构不规则的接口，如 /api/setup） */
+    suspend fun postRaw(path: String, body: Map<String, Any?>? = null): String {
+        val url = baseUrl() + path
+        val builder = Request.Builder()
+            .url(url)
+            .method("POST", buildBody(body))
+
+        if (pat.isNotBlank()) {
+            builder.header("Authorization", "Bearer $pat")
+        }
+
+        client.newCall(builder.build()).execute().use { resp ->
+            val bodyStr = resp.body?.string() ?: ""
+            if (!resp.isSuccessful) {
+                throw ApiException("HTTP ${resp.code}: $bodyStr", resp.code)
+            }
+            return bodyStr
+        }
+    }
+
+    /**
+     * 确保后端已初始化。
+     *
+     * 关键：新版 New API 不自动创建 root 用户（源码 createRootAccountIfNeed 无人调用），
+     * 必须先调用 POST /api/setup 创建管理员，否则无法登录。
+     * 实测后端 /api/setup 返回 {"data":{"status":bool,"root_init":bool,...},"success":true}，
+     * status=false 表示未初始化。新版密码强制 >= 8 位。
+     */
+    suspend fun ensureInitialized(rootUser: String = "root", rootPass: String = "root123456") {
+        val setupStr = getRaw("/api/setup")
+        val data = org.json.JSONObject(setupStr).optJSONObject("data")
+        val initialized = data?.optBoolean("status") ?: false
+        if (!initialized) {
+            postRaw(
+                "/api/setup",
+                mapOf(
+                    "username" to rootUser,
+                    "password" to rootPass,
+                    "confirmPassword" to rootPass,
+                    "SelfUseModeEnabled" to true,
+                    "DemoSiteEnabled" to false,
+                ),
+            )
+        }
+    }
+
     /** 通用请求（需在协程/IO 线程调用） */
     private suspend fun <T> request(
         method: String,
