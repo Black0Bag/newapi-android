@@ -23,7 +23,7 @@ object BackendProcessManager {
     private const val TAG = "BackendProcess"
     private const val BINARY_NAME = "libnewapi.so"
     private const val DEFAULT_PORT = 13000
-    private const val START_TIMEOUT_MS = 20_000L
+    private const val START_TIMEOUT_MS = 40_000L
 
     @Volatile
     var process: Process? = null
@@ -73,8 +73,6 @@ object BackendProcessManager {
             val env = pb.environment()
             env["PORT"] = port.toString()
             env["SQLITE_PATH"] = dbFile.absolutePath
-            // New API 会自动创建管理员账号：root / 123456
-            env["INITIAL_ROOT_TOKEN"] = ""
             env["TZ"] = "Asia/Shanghai"
 
             val proc = pb.start()
@@ -85,7 +83,15 @@ object BackendProcessManager {
             if (!healthy) {
                 proc.destroy()
                 process = null
-                Result.failure(IllegalStateException("Backend failed health check"))
+                // 诊断：把 server.log 末尾内容带进错误信息
+                val logTail = runCatching { logFile.readLines().takeLast(20).joinToString("\n") }.getOrDefault("")
+                val errMsg = if (logTail.isNotBlank()) {
+                    "Backend failed health check\n\n--- server.log ---\n$logTail"
+                } else {
+                    "Backend failed health check"
+                }
+                Log.e(TAG, errMsg)  // 同步输出到 logcat，便于 adb 抓取
+                Result.failure(IllegalStateException(errMsg))
             } else {
                 Result.success(port)
             }
