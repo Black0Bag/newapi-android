@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
  * ChannelsScreen
  *
  * 渠道管理：列表/增删改/测试/启停。
- * 待完善：接 /api/channel/*。
+ * 待完善：接 /api/channel。
  */
 @Composable
 fun ChannelsScreen() {
