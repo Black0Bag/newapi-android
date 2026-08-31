@@ -79,24 +79,24 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.5.1-m5
-          name: v0.5.1-m5 (渠道创建修复)
+          tag_name: v0.5.2-m5
+          name: v0.5.2-m5 (启停修复 + 自动获取模型)
           body: |
-            ## v0.5.1-m5 (渠道创建修复)
+            ## v0.5.2-m5 (启停修复 + 自动获取模型)
 
             ### 本次修复
-            - 修复：新建渠道报 `cannot unmarshal string into Go struct field AddChannelRequest.channel`
-            - 根因：org.json 对嵌套 Map 不递归序列化，`{"channel":{...}}` 被序列化成字符串
-            - 修复：ApiClient.buildBody 增加递归转换（Map→JSONObject，List→JSONArray）
-            - versionName = 0.5.1
+            - 修复：令牌/渠道启停报 `Unexpected JSON token ... Expected start of object '{', but had 't'`
+            - 根因：启停接口返回 `{"data":true}`（布尔），原用 EmptyData 解析失败
+            - 修复：新增 BooleanData 模型解析 data:true/false
+            - 新增：新建渠道时「自动获取上游模型」按钮（调 POST /api/channel/fetch_models，自动填入 models 字段）
 
             ### 下载（两种方式任选）
 
             **方式一：GitHub 直连**
-            https://github.com/Black0Bag/newapi-android/releases/download/v0.5.1-m5/app-debug.apk
+            https://github.com/Black0Bag/newapi-android/releases/download/v0.5.2-m5/app-debug.apk
 
             **方式二：镜像加速（国内推荐）**
-            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.5.1-m5/app-debug.apk
+            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.5.2-m5/app-debug.apk
           files: |
             android/app/build/outputs/apk/debug/*.apk
           generate_release_notes: false
