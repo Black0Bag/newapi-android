@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
  * TokensScreen
  *
  * 令牌管理：列表/创建/删除/复制 sk-。
- * 待完善：接 /api/token/*。
+ * 待完善：接 /api/token。
  */
 @Composable
 fun TokensScreen() {
