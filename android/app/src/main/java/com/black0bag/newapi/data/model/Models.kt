@@ -26,6 +26,12 @@ data class LoginResponse(
 @Serializable
 class EmptyData
 
+/** data 为布尔值的响应（实测：启停接口返回 {"data":true}） */
+@Serializable
+data class BooleanData(
+    val data: Boolean = false,
+)
+
 /** 用户信息（实测 GET /api/user/self data 字段） */
 @Serializable
 data class UserInfo(
