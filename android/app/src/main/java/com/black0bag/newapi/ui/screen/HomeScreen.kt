@@ -119,7 +119,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Filled.AccountCircle,
+                            imageVector = androidx.compose.material.icons.Icons.Default.Key,
                             contentDescription = null,
                         )
                         Spacer(Modifier.width(8.dp))
@@ -140,12 +140,7 @@ fun HomeScreen(
                         modifier = Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Filled.CheckCircle,
-                            contentDescription = null,
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text("已登录（管理令牌已保存）", style = MaterialTheme.typography.titleMedium)
+                        Text("✓ 已登录", style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
