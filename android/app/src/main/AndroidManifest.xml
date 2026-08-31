@@ -10,14 +10,17 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <!-- 关键：允许从 APK 解压 .so 到 nativeLibraryDir -->
+    <!-- 关键：允许从 APK 解压 .so 到 nativeLibraryDir；
+         usesCleartextTraffic：Android 9+ 默认禁止明文 HTTP，
+         健康检查需要访问 http://127.0.0.1:13000，必须开启 -->
     <application
         android:allowBackup="true"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NewapiAndroid">
+        android:theme="@style/Theme.NewapiAndroid"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"
