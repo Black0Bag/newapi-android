@@ -72,6 +72,26 @@ object ApiClient {
     suspend fun <T> delete(path: String, serializer: KSerializer<T>): ApiResponse<T> =
         request("DELETE", path, null, serializer)
 
+    /**
+     * 获取上游渠道的模型列表。
+     * POST /api/channel/fetch_models，body: {type, key, base_url}（或 {channel_id}）
+     * 实测：成功返回 {"data":["gpt-4o",...]}
+     */
+    suspend fun fetchUpstreamModels(type: Int, key: String, baseUrl: String): List<String> {
+        val body = mapOf(
+            "type" to type,
+            "key" to key,
+            "base_url" to baseUrl,
+        )
+        val raw = postRaw("/api/channel/fetch_models", body)
+        val obj = org.json.JSONObject(raw)
+        if (!obj.optBoolean("success", false)) {
+            throw ApiException(obj.optString("message", "获取模型失败"), 0)
+        }
+        val arr = obj.optJSONArray("data") ?: org.json.JSONArray()
+        return (0 until arr.length()).map { arr.optString(it) }.filter { it.isNotBlank() }
+    }
+
     /** GET 请求（返回原始字符串 body，用于 data 是裸字符串的接口） */
     suspend fun getRaw(path: String): String {
         val url = baseUrl() + path
