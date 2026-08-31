@@ -286,6 +286,30 @@ private fun CreateChannelDialog(
     var models by remember { mutableStateOf("") }
     var group by remember { mutableStateOf("default") }
     var typeMenuExpanded by remember { mutableStateOf(false) }
+    var fetching by remember { mutableStateOf(false) }
+    var fetchError by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+
+    fun fetchModels() {
+        if (key.isBlank()) { fetchError = "请先填 Key"; return }
+        scope.launch {
+            fetching = true; fetchError = null
+            val r = withContext(Dispatchers.IO) {
+                runCatching {
+                    com.black0bag.newapi.data.ApiClient.fetchUpstreamModels(
+                        ChannelTypes[typeIndex].first, key, baseUrl,
+                    )
+                }
+            }
+            r.onSuccess { list ->
+                if (list.isEmpty()) fetchError = "上游返回空模型列表"
+                else models = list.joinToString(",")
+            }.onFailure { e ->
+                fetchError = e.message ?: "获取失败"
+            }
+            fetching = false
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -318,7 +342,15 @@ private fun CreateChannelDialog(
                 OutlinedTextField(value = baseUrl, onValueChange = { baseUrl = it }, label = { Text("Base URL") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(value = models, onValueChange = { models = it }, label = { Text("Models（逗号分隔）") }, modifier = Modifier.fillMaxWidth())
-                Spacer(Modifier.height(8.dp))
+                fetchError?.let {
+                    Spacer(Modifier.height(4.dp))
+                    Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+                Spacer(Modifier.height(4.dp))
+                TextButton(onClick = ::fetchModels, enabled = !fetching) {
+                    Text(if (fetching) "获取中..." else "自动获取上游模型")
+                }
+                Spacer(Modifier.height(4.dp))
                 OutlinedTextField(value = group, onValueChange = { group = it }, label = { Text("分组") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             }
         },
