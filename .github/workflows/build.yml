@@ -79,23 +79,23 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.4.2-m5-fix
-          name: v0.4.2-m5-fix (登录崩溃修复)
+          tag_name: v0.4.3-m5-fix
+          name: v0.4.3-m5-fix (登录401修复)
           body: |
-            ## v0.4.2-m5-fix (登录崩溃修复)
+            ## v0.4.3-m5-fix (登录401修复)
 
             ### 本次修复
-            - 修复：登录时 kotlinx.serialization 泛型擦除导致的崩溃
-            - ApiClient 改为显式传 serializer + ApiResponse 组合序列化器（官方推荐）
-            - 保留：首屏主页 + 登录入口（v0.4.1 修复）
+            - 修复：登录后获取 PAT 返回裸字符串 key，模型解析失败导致 401
+            - ApiClient 新增 getRaw() 直接获取原始字符串
+            - versionName 同步 0.4.2（安装后显示正确版本号）
 
             ### 下载（两种方式任选）
 
             **方式一：GitHub 直连**
-            https://github.com/Black0Bag/newapi-android/releases/download/v0.4.2-m5-fix/app-debug.apk
+            https://github.com/Black0Bag/newapi-android/releases/download/v0.4.3-m5-fix/app-debug.apk
 
             **方式二：镜像加速（国内推荐）**
-            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.4.2-m5-fix/app-debug.apk
+            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.4.3-m5-fix/app-debug.apk
           files: |
             android/app/build/outputs/apk/debug/*.apk
           generate_release_notes: false
