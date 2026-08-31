@@ -6,17 +6,17 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 /**
  * ApiClient
  *
- * New API 管理接口的轻量客户端（OkHttp 直连，不引入 Retrofit 保持轻量）。
+ * New API 管理接口的轻量客户端（OkHttp 直连）。
  * - 统一 baseUrl：http://127.0.0.1:端口
  * - 统一鉴权：Authorization: Bearer PAT
- * - 统一 JSON 解析（kotlinx.serialization）
- *
- * 注意：APP 控制的后端跑在本地 127.0.0.1，所有管理接口走这里。
+ * - 响应解析：kotlinx.serialization（泛型 T）
+ * - 请求体序列化：org.json（Android 内置，序列化 Map 最稳）
  */
 object ApiClient {
 
@@ -45,28 +45,27 @@ object ApiClient {
     /** 需要登录/认证时的错误 */
     class ApiException(message: String, val code: Int = 0) : Exception(message)
 
-    /** GET 请求，返回 ApiResponse<T> */
+    /** GET 请求 */
     suspend inline fun <reified T> get(path: String): ApiResponse<T> = request("GET", path, null)
 
     /** POST 请求 */
-    suspend inline fun <reified T> post(path: String, body: Any? = null): ApiResponse<T> =
+    suspend inline fun <reified T> post(path: String, body: Map<String, Any?>? = null): ApiResponse<T> =
         request("POST", path, body)
 
     /** PUT 请求 */
-    suspend inline fun <reified T> put(path: String, body: Any? = null): ApiResponse<T> =
+    suspend inline fun <reified T> put(path: String, body: Map<String, Any?>? = null): ApiResponse<T> =
         request("PUT", path, body)
 
     /** DELETE 请求 */
     suspend inline fun <reified T> delete(path: String): ApiResponse<T> = request("DELETE", path, null)
 
     /** 通用请求（需在协程/IO 线程调用） */
-    suspend fun <T> request(method: String, path: String, body: Any?): ApiResponse<T> {
+    suspend fun <T> request(method: String, path: String, body: Map<String, Any?>?): ApiResponse<T> {
         val url = baseUrl() + path
         val builder = Request.Builder()
             .url(url)
             .method(method, buildBody(body))
 
-        // 鉴权：PAT（如果有）
         if (pat.isNotBlank()) {
             builder.header("Authorization", "Bearer $pat")
         }
@@ -80,16 +79,13 @@ object ApiClient {
         }
     }
 
-    private fun buildBody(body: Any?): okhttp3.RequestBody? {
+    /** 用 org.json 序列化请求体（最稳，无泛型坑） */
+    private fun buildBody(body: Map<String, Any?>?): okhttp3.RequestBody? {
         if (body == null) return null
-        // 直接序列化（Map 或 @Serializable 对象均可）
-        val jsonStr = when (body) {
-            is Map<*, *> -> json.encodeToString(kotlinx.serialization.builtins.MapSerializer(
-                kotlinx.serialization.builtins.serializer<String>(),
-                kotlinx.serialization.builtins.serializer<String>()
-            ), body)
-            else -> json.encodeToString(body.toString())
+        val obj = JSONObject()
+        body.forEach { (k, v) ->
+            obj.put(k, v)
         }
-        return jsonStr.toRequestBody("application/json".toMediaType())
+        return obj.toString().toRequestBody("application/json".toMediaType())
     }
 }
