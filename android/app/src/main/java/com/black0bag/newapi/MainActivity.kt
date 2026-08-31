@@ -1,5 +1,8 @@
 package com.black0bag.newapi
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -218,7 +221,16 @@ class MainActivity : ComponentActivity() {
                             )
                         },
                         confirmButton = {
-                            TextButton(onClick = { showLog = false }) { Text("关闭") }
+                            Row {
+                                TextButton(
+                                    onClick = {
+                                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                        clipboard.setPrimaryClip(ClipData.newPlainText("server.log", logText))
+                                        Toast.makeText(this@MainActivity, "日志已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                                    }
+                                ) { Text("复制") }
+                                TextButton(onClick = { showLog = false }) { Text("关闭") }
+                            }
                         }
                     )
                 }
