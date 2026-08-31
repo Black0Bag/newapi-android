@@ -55,10 +55,18 @@ object ApiClient {
     /** POST 请求 */
     suspend fun <T> post(path: String, body: Map<String, Any?>? = null, serializer: KSerializer<T>): ApiResponse<T> =
         request("POST", path, body, serializer)
-
-    /** PUT 请求 */
+/** PUT 请求 */
     suspend fun <T> put(path: String, body: Map<String, Any?>? = null, serializer: KSerializer<T>): ApiResponse<T> =
         request("PUT", path, body, serializer)
+
+    /** PUT 带 query 参数（实测：令牌状态切换要 ?status_only=true） */
+    suspend fun <T> putWithQuery(
+        path: String,
+        query: String,
+        body: Map<String, Any?>?,
+        serializer: KSerializer<T>,
+    ): ApiResponse<T> = request("PUT", "$path?$query", body, serializer)
+
 
     /** DELETE 请求 */
     suspend fun <T> delete(path: String, serializer: KSerializer<T>): ApiResponse<T> =
