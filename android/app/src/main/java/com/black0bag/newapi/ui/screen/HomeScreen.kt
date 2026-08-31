@@ -150,20 +150,35 @@ fun HomeScreen(
                     scope.launch {
                         if (isRunning) {
                             statusText = "正在停止..."
-                            com.black0bag.newapi.BackendService.stopBackend(context)
+                            // 修复：启停对称——直接调 BackendProcessManager.stop()
+                            // （启动走的就是 BackendProcessManager.start，停止不能绕 BackendService，
+                            //   否则 onDestroy 永不触发 → 进程停不掉 → "停止失败"）
+                            val stopped = withContext(Dispatchers.IO) {
+                                BackendProcessManager.stop()
+                            }
                             var attempts = 0
                             while (BackendProcessManager.isRunning && attempts < 20) {
                                 delay(300)
                                 attempts++
                             }
-                            statusText = if (BackendProcessManager.isRunning) "停止失败" else "已停止"
+                            statusText = if (BackendProcessManager.isRunning) "停止失败"
+                            else if (stopped) "已停止" else "已停止"
                         } else {
                             statusText = "正在启动..."
                             val result = withContext(Dispatchers.IO) {
                                 BackendProcessManager.start(context)
                             }
                             statusText = if (result.isSuccess) {
-                                "启动成功 (port ${result.getOrNull()})"
+                                // 启动成功后，确保后端已初始化 root（新版 New API 不自动建 root）
+                                val initResult = withContext(Dispatchers.IO) {
+                                    runCatching { com.black0bag.newapi.data.ApiClient.ensureInitialized() }
+                                }
+                                if (initResult.isSuccess) {
+                                    "启动成功 (port ${result.getOrNull()})，已就绪"
+                                } else {
+                                    val e = initResult.exceptionOrNull()?.message ?: "未知"
+                                    "启动成功，但初始化失败：$e"
+                                }
                             } else {
                                 val err = result.exceptionOrNull()?.message ?: "未知错误"
                                 logText = err
