@@ -24,24 +24,26 @@ import kotlinx.coroutines.launch
  */
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
+    private val settings = SettingsStore.getInstance(app)
+
     private val _pat = MutableStateFlow("")
     val pat: StateFlow<String> = _pat.asStateFlow()
 
     private val _port = MutableStateFlow(13000)
     val port: StateFlow<Int> = _port.asStateFlow()
 
-    val theme: StateFlow<String> = SettingsStore.theme
+    val theme: StateFlow<String> = settings.theme
         .stateIn(viewModelScope, SharingStarted.Eagerly, "system")
 
     init {
         viewModelScope.launch {
-            SettingsStore.pat.collect { stored ->
+            settings.pat.collect { stored ->
                 _pat.value = stored
                 ApiClient.pat = stored
             }
         }
         viewModelScope.launch {
-            SettingsStore.port.collect { stored ->
+            settings.port.collect { stored ->
                 _port.value = stored
                 ApiClient.port = stored
             }
@@ -51,7 +53,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** 保存 PAT（登录成功后调用） */
     fun setPat(value: String) {
         viewModelScope.launch {
-            SettingsStore.setPat(getApplication(), value)
+            settings.setPat(value)
             ApiClient.pat = value
         }
     }
@@ -59,7 +61,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** 保存端口 */
     fun setPort(value: Int) {
         viewModelScope.launch {
-            SettingsStore.setPort(getApplication(), value)
+            settings.setPort(value)
             ApiClient.port = value
         }
     }
@@ -67,14 +69,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** 保存主题 */
     fun setTheme(value: String) {
         viewModelScope.launch {
-            SettingsStore.setTheme(getApplication(), value)
+            settings.setTheme(value)
         }
     }
 
     /** 登出（清空 PAT） */
     fun logout() {
         viewModelScope.launch {
-            SettingsStore.setPat(getApplication(), "")
+            settings.setPat("")
             ApiClient.pat = ""
             _pat.value = ""
         }
