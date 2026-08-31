@@ -119,7 +119,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.AccountCircle,
+                            imageVector = androidx.compose.material.icons.Icons.Filled.AccountCircle,
                             contentDescription = null,
                         )
                         Spacer(Modifier.width(8.dp))
@@ -141,7 +141,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                            imageVector = androidx.compose.material.icons.Icons.Filled.CheckCircle,
                             contentDescription = null,
                         )
                         Spacer(Modifier.width(8.dp))
