@@ -79,14 +79,22 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.3.1-m0-debug
-          name: v0.3.1-m0-debug (启动失败修复)
+          tag_name: v0.3.1-m0-copy
+          name: v0.3.1-m0-copy (日志复制按钮 + 镜像下载链接)
           body: |
-            ## v0.3.1-m0-debug 启动失败修复
-            - 修复：Android 9+ 默认禁明文 HTTP → 健康检查被拦截导致「Backend failed health check」
-            - 修复：健康检查超时 20s → 40s（首次 SQLite 迁移慢）
-            - 新增：失败时显示 server.log 日志、UI 增加「查看日志」按钮
-            - 移除无效环境变量 INITIAL_ROOT_TOKEN
+            ## v0.3.1-m0-copy (日志复制按钮 + 镜像下载链接)
+
+            ### 本次更新
+            - 新增：日志弹窗「复制」按钮（一键复制 server.log 到剪贴板）
+            - 保留：明文 HTTP 修复、40s 超时、失败日志展示
+
+            ### 下载（两种方式任选）
+
+            **方式一：GitHub 直连**
+            https://github.com/Black0Bag/newapi-android/releases/download/v0.3.1-m0-copy/app-debug.apk
+
+            **方式二：镜像加速（国内推荐）**
+            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.3.1-m0-copy/app-debug.apk
           files: |
             android/app/build/outputs/apk/debug/*.apk
           generate_release_notes: false
