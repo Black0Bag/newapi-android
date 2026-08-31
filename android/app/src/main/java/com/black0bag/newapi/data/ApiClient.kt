@@ -15,8 +15,11 @@ import java.util.concurrent.TimeUnit
  * New API 管理接口的轻量客户端（OkHttp 直连）。
  * - 统一 baseUrl：http://127.0.0.1:端口
  * - 统一鉴权：Authorization: Bearer PAT
- * - 响应解析：kotlinx.serialization（泛型 T）
+ * - 响应解析：kotlinx.serialization（reified T）
  * - 请求体序列化：org.json（Android 内置，序列化 Map 最稳）
+ *
+ * 注意：json/client/buildBody 用 internal（非 private），
+ * 因为 request 是 inline reified，内联函数不能访问 private 成员。
  */
 object ApiClient {
 
@@ -28,12 +31,12 @@ object ApiClient {
     @Volatile
     var pat: String = ""
 
-    private val json = Json {
+    internal val json = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
     }
 
-    private val client = OkHttpClient.Builder()
+    internal val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
@@ -59,8 +62,8 @@ object ApiClient {
     /** DELETE 请求 */
     suspend inline fun <reified T> delete(path: String): ApiResponse<T> = request("DELETE", path, null)
 
-    /** 通用请求（需在协程/IO 线程调用） */
-    suspend fun <T> request(method: String, path: String, body: Map<String, Any?>?): ApiResponse<T> {
+    /** 通用请求（inline reified 保留 T 类型供序列化） */
+    suspend inline fun <reified T> request(method: String, path: String, body: Map<String, Any?>?): ApiResponse<T> {
         val url = baseUrl() + path
         val builder = Request.Builder()
             .url(url)
@@ -80,7 +83,7 @@ object ApiClient {
     }
 
     /** 用 org.json 序列化请求体（最稳，无泛型坑） */
-    private fun buildBody(body: Map<String, Any?>?): okhttp3.RequestBody? {
+    internal fun buildBody(body: Map<String, Any?>?): okhttp3.RequestBody? {
         if (body == null) return null
         val obj = JSONObject()
         body.forEach { (k, v) ->
