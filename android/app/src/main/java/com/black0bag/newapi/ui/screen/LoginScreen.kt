@@ -99,8 +99,12 @@ fun LoginScreen(
                 scope.launch {
                     val result = withContext(Dispatchers.IO) {
                         runCatching {
-                            // 1. 登录拿 access_token
-                            val loginResp: ApiResponse<LoginResponse> = ApiClient.post("/api/user/login")
+                            // 1. 登录拿 access_token（POST JSON: {username, password}）
+                            val loginBody = mapOf(
+                                "username" to username,
+                                "password" to password,
+                            )
+                            val loginResp: ApiResponse<LoginResponse> = ApiClient.post("/api/user/login", loginBody)
                             val token = loginResp.data?.accessToken ?: ""
                             // 2. 用 access_token 换 PAT（永久令牌）
                             ApiClient.pat = token
