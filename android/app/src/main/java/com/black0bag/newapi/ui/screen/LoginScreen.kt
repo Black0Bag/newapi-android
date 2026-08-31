@@ -104,11 +104,15 @@ fun LoginScreen(
                                 "username" to username,
                                 "password" to password,
                             )
-                            val loginResp: ApiResponse<LoginResponse> = ApiClient.post("/api/user/login", loginBody)
+                            val loginResp: ApiResponse<LoginResponse> = ApiClient.post(
+                                "/api/user/login", loginBody, LoginResponse.serializer()
+                            )
                             val token = loginResp.data?.accessToken ?: ""
                             // 2. 用 access_token 换 PAT（永久令牌）
                             ApiClient.pat = token
-                            val patResp: ApiResponse<TokenResponse> = ApiClient.get("/api/user/token")
+                            val patResp: ApiResponse<TokenResponse> = ApiClient.get(
+                                "/api/user/token", TokenResponse.serializer()
+                            )
                             val pat = patResp.data?.accessToken ?: ""
                             ApiClient.pat = ""
                             pat
