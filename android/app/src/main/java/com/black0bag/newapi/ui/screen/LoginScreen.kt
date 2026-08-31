@@ -109,10 +109,12 @@ fun LoginScreen(
                             )
                             val token = loginResp.data?.accessToken ?: ""
                             // 2. 用 access_token 换 PAT（永久令牌）
-                            // 注意：GenerateAccessToken 返回的 data 是裸字符串 key，直接 getRaw 获取
+                            // GenerateAccessToken 返回 {"success":true,"data":"sk-xxx"}，需提取 data 字段
                             ApiClient.pat = token
-                            val pat = ApiClient.getRaw("/api/user/token")
+                            val rawResp = ApiClient.getRaw("/api/user/token")
                             ApiClient.pat = ""
+                            // 从 JSON 响应中提取 data 字段（裸字符串 key）
+                            val pat = org.json.JSONObject(rawResp).optString("data", "")
                             pat
                         }
                     }
