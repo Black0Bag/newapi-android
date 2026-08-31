@@ -113,7 +113,7 @@ fun LoginScreen(
                     result.onSuccess { pat ->
                         if (pat.isNotBlank()) {
                             // 存 PAT 到 DataStore（MainViewModel 会同步到 ApiClient）
-                            com.black0bag.newapi.data.SettingsStore.setPat(context, pat)
+                            com.black0bag.newapi.data.SettingsStore.getInstance(context).setPat(pat)
                             onLoginSuccess()
                         } else {
                             errorText = "登录失败：未获取到令牌"
