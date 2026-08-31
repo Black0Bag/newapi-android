@@ -82,7 +82,13 @@ object ApiClient {
 
     private fun buildBody(body: Any?): okhttp3.RequestBody? {
         if (body == null) return null
-        return json.encodeToString(kotlinx.serialization.serializer(body::class), body)
+        // 用 kotlinx.serialization 的 Json 序列化任意 @Serializable 对象
+        return json.encodeToString(serializerFor(body), body)
             .toRequestBody("application/json".toMediaType())
+    }
+
+    private fun serializerFor(body: Any): kotlinx.serialization.KSerializer<Any> {
+        @Suppress("UNCHECKED_CAST")
+        return kotlinx.serialization.serializer(body::class) as kotlinx.serialization.KSerializer<Any>
     }
 }
