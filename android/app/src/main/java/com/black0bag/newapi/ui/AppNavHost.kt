@@ -32,8 +32,9 @@ import com.black0bag.newapi.ui.screen.WebViewScreen
  * AppNavHost
  *
  * 应用主框架：底部导航（4 tab）+ 二级路由（渠道/令牌/模型/网页版）
- * - 未登录（无 PAT）→ 强制进登录页
- * - 已登录 → 底部导航主界面
+ * - 首屏永远是主页（可先启动后端，再进登录）
+ * - 登录入口：主页快捷入口「登录/账号」（登录后存 PAT）
+ * - 已登录（有 PAT）→ 各功能页正常使用；未登录 → 登录页提示
  */
 @Composable
 fun AppNavHost(
@@ -43,8 +44,8 @@ fun AppNavHost(
     val context = LocalContext.current
     val pat by mainViewModel.pat.collectAsState()
 
-    // 未登录时进入登录页
-    val startDestination = if (pat.isBlank()) Routes.LOGIN else Routes.HOME
+    // 首屏永远是主页（后端可能未启动，主页有启停按钮）
+    val startDestination = Routes.HOME
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -93,7 +94,11 @@ fun AppNavHost(
             }
             composable(Routes.HOME) {
                 HomeScreen(
-                    onNavigate = { route -> navController.navigate(route) }
+                    onNavigate = { route -> navController.navigate(route) },
+                    isLoggedIn = pat.isNotBlank(),
+                    onLoginClick = {
+                        navController.navigate(Routes.LOGIN)
+                    },
                 )
             }
             composable(Routes.DASHBOARD) {
