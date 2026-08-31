@@ -45,7 +45,7 @@ fun ModelsScreen() {
             val r = withContext(Dispatchers.IO) {
                 runCatching {
                     val resp: ApiResponse<List<String>> = ApiClient.get(
-                        "/api/user/models", ApiResponse.serializer(ListSerializer(String.serializer()))
+                        "/api/user/models", ListSerializer(String.serializer())
                     )
                     if (!resp.success) error("加载失败: ${resp.message}")
                     resp.data ?: emptyList()
