@@ -79,35 +79,24 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.5.0-m5
-          name: v0.5.0-m5 (6屏接真实API)
+          tag_name: v0.5.1-m5
+          name: v0.5.1-m5 (渠道创建修复)
           body: |
-            ## v0.5.0-m5 (6 屏接真实 API)
-
-            M5-③ 功能填充完成！6 个屏幕全部接入 New API 后端，全部数据均经本地实测确认格式。
-
-            ### 本次新增
-            - **仪表盘**：用户信息 + 本周期配额/RPM/TPM（无余额，符合自用场景）
-            - **令牌管理**：列表 / 创建 / 揭示完整 sk- key（仅一次可见） / 启停 / 删除
-            - **渠道管理**：列表 / 新建（12 种类型下拉选） / 测试 / 启停 / 删除
-            - **请求日志**：最近 20 条 + 类型标签 + request_id 可复制
-            - **模型市场**：渠道可用模型列表 + 一键复制
-            - **设置**：主题切换（跟随/浅/深）/ 端口显示 / 配置备份导出导入（本地，不上云）/ 退出登录
+            ## v0.5.1-m5 (渠道创建修复)
 
             ### 本次修复
-            - Models.kt 全部字段以本地后端实测 JSON 为准（不再"猜字段"）
-            - ApiClient 新增 putWithQuery（令牌启停要 ?status_only=true）
-            - 令牌/渠道的「删除/启停」均二次确认（用户硬性要求）
-            - 所有可复制文本（日志 request_id、用户名、模型名、导出路径、错误消息）都加复制按钮
-            - versionName = 0.5.0
+            - 修复：新建渠道报 `cannot unmarshal string into Go struct field AddChannelRequest.channel`
+            - 根因：org.json 对嵌套 Map 不递归序列化，`{"channel":{...}}` 被序列化成字符串
+            - 修复：ApiClient.buildBody 增加递归转换（Map→JSONObject，List→JSONArray）
+            - versionName = 0.5.1
 
             ### 下载（两种方式任选）
 
             **方式一：GitHub 直连**
-            https://github.com/Black0Bag/newapi-android/releases/download/v0.5.0-m5/app-debug.apk
+            https://github.com/Black0Bag/newapi-android/releases/download/v0.5.1-m5/app-debug.apk
 
             **方式二：镜像加速（国内推荐）**
-            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.5.0-m5/app-debug.apk
+            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.5.1-m5/app-debug.apk
           files: |
             android/app/build/outputs/apk/debug/*.apk
           generate_release_notes: false
