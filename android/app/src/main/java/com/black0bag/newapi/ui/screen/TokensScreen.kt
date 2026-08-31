@@ -205,13 +205,11 @@ fun TokensScreen() {
                 Column {
                     Text("请妥善保存，关闭后不可再查看：", style = MaterialTheme.typography.bodySmall)
                     Spacer(Modifier.height(8.dp))
-                    SelectionContainer {
-                        Text(
-                            "sk-$k",
-                            fontFamily = FontFamily.Monospace,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
+                    Text(
+                        "sk-$k",
+                        fontFamily = FontFamily.Monospace,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
             },
             confirmButton = {
