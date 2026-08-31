@@ -79,28 +79,35 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.4.5-m5-fix
-          name: v0.4.5-m5-fix (登录初始化根因修复)
+          tag_name: v0.5.0-m5
+          name: v0.5.0-m5 (6屏接真实API)
           body: |
-            ## v0.4.5-m5-fix (登录初始化根因修复)
+            ## v0.5.0-m5 (6 屏接真实 API)
 
-            经本地实测后端定位到 401 的真正根因：新版 New API 不自动创建 root 用户，
-            导致登录第一步就失败，被第二步 401 掩盖。
+            M5-③ 功能填充完成！6 个屏幕全部接入 New API 后端，全部数据均经本地实测确认格式。
 
-            ### 本次修复（基于实测证据）
-            - 修复根因：后端启动后自动调用 POST /api/setup 初始化 root（新版不自动建号）
-            - 修复：登录检查第一步 success 标志，不再让真错误被 401 掩盖
-            - 修复：启停对称，停止后端改为直接调 BackendProcessManager.stop()（修复"停止失败"）
-            - 默认管理员账号：root / root123456（新版密码强制 >= 8 位）
-            - versionName 同步 0.4.5
+            ### 本次新增
+            - **仪表盘**：用户信息 + 本周期配额/RPM/TPM（无余额，符合自用场景）
+            - **令牌管理**：列表 / 创建 / 揭示完整 sk- key（仅一次可见） / 启停 / 删除
+            - **渠道管理**：列表 / 新建（12 种类型下拉选） / 测试 / 启停 / 删除
+            - **请求日志**：最近 20 条 + 类型标签 + request_id 可复制
+            - **模型市场**：渠道可用模型列表 + 一键复制
+            - **设置**：主题切换（跟随/浅/深）/ 端口显示 / 配置备份导出导入（本地，不上云）/ 退出登录
+
+            ### 本次修复
+            - Models.kt 全部字段以本地后端实测 JSON 为准（不再"猜字段"）
+            - ApiClient 新增 putWithQuery（令牌启停要 ?status_only=true）
+            - 令牌/渠道的「删除/启停」均二次确认（用户硬性要求）
+            - 所有可复制文本（日志 request_id、用户名、模型名、导出路径、错误消息）都加复制按钮
+            - versionName = 0.5.0
 
             ### 下载（两种方式任选）
 
             **方式一：GitHub 直连**
-            https://github.com/Black0Bag/newapi-android/releases/download/v0.4.5-m5-fix/app-debug.apk
+            https://github.com/Black0Bag/newapi-android/releases/download/v0.5.0-m5/app-debug.apk
 
             **方式二：镜像加速（国内推荐）**
-            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.4.5-m5-fix/app-debug.apk
+            https://gh-proxy.cn/https://github.com/Black0Bag/newapi-android/releases/download/v0.5.0-m5/app-debug.apk
           files: |
             android/app/build/outputs/apk/debug/*.apk
           generate_release_notes: false
