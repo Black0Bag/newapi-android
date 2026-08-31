@@ -30,6 +30,8 @@ import com.black0bag.newapi.ui.Routes
 @Composable
 fun HomeScreen(
     onNavigate: (String) -> Unit,
+    isLoggedIn: Boolean = false,
+    onLoginClick: () -> Unit = {},
 ) {
     var isRunning by remember { mutableStateOf(BackendProcessManager.isRunning) }
     var statusText by remember { mutableStateOf("就绪") }
@@ -101,6 +103,50 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // 登录入口（未登录时显示，可先启动后端再登录）
+            if (!isLoggedIn) {
+                OutlinedCard(
+                    onClick = onLoginClick,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.AccountCircle,
+                            contentDescription = null,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("登录 / 账号", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = "启动后端后，在此登录获取管理权限",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Text("›", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+            } else {
+                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                            contentDescription = null,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("已登录（管理令牌已保存）", style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
 
