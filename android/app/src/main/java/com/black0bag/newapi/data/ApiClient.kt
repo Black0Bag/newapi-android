@@ -85,7 +85,7 @@ object ApiClient {
             if (!resp.isSuccessful) {
                 throw ApiException("HTTP ${resp.code}: $bodyStr", resp.code)
             }
-            return json.decodeFromString(serializer, bodyStr)
+            return json.decodeFromString(ApiResponse.serializer(serializer), bodyStr)
         }
     }
 
